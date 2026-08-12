@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vera</title>
+  <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='favicon.svg') }}">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,800;0,900;1,600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+  <div class="app">
+    <!-- ─────────── SIDEBAR ─────────── -->
+    <aside class="sidebar">
+      <div class="sb-head">
+        <div class="sb-logo">V</div>
+        <div class="sb-title">VERA</div>
+      </div>
+
+      <button class="new-chat" id="newChatBtn"><span>＋&nbsp;</span><span data-i18n="sb.newchat">Yeni sohbet</span></button>
+
+      <div class="sb-label" data-i18n="sb.previous">Önceki sohbetler</div>
+      <div class="conv-list" id="convList"></div>
+
+      <button class="sb-foot" id="profileBtn" type="button" data-i18n-title="settings.title" title="Ayarlar & Profil">
+        <span class="mini-avatar" id="miniAvatar">
+          {% if avatar %}<img src="{{ avatar }}" alt="">{% else %}<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-6 8-6s8 2 8 6"/></svg>{% endif %}
+        </span>
+        <span class="pf-name">{{ username }}</span>
+        <span class="pf-gear">⚙</span>
+      </button>
+    </aside>
+
+    <!-- ─────────── MAIN ─────────── -->
+    <main class="main">
+      <div class="chat-scroll" id="chatScroll">
+        <div class="chat-inner" id="chatInner">
+          <!-- karşılama ekranı -->
+          <div class="welcome" id="welcome">
+            <span class="wc-eyebrow" data-i18n="welcome.eyebrow">HOŞ GELDİN</span>
+            <h2 data-i18n="welcome.h2">Merhaba, {{ username }}</h2>
+            <p data-i18n="welcome.p">Ben Vera. Sorularını yanıtlar, fotoğraflarını analiz eder, seninle
+               sesli sohbet ederim. Ne konuşmak istersin?</p>
+            <div class="chips">
+              <div class="chip" data-i18n="chip.1">Bana ilginç bir bilgi ver</div>
+              <div class="chip" data-i18n="chip.2">Bir hikâye yaz</div>
+              <div class="chip" data-i18n="chip.3">Kod yazmama yardım et</div>
+              <div class="chip" data-i18n="chip.4">Bugün ne yapsam?</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ─────────── COMPOSER ─────────── -->
+      <div class="composer-wrap">
+        <div class="composer">
+          <div class="reply-bar" id="replyBar">
+            <span class="reply-bar-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 17 4 12 9 7"/><path d="M20 18v-2a4 4 0 0 0-4-4H4"/></svg>
+            </span>
+            <div class="reply-bar-body">
+              <span class="reply-bar-who" id="replyBarWho"></span>
+              <span class="reply-bar-text" id="replyBarText"></span>
+            </div>
+            <button class="reply-bar-x" id="replyBarX" type="button" title="İptal">✕</button>
+          </div>
+
+          <div class="preview-bar" id="previewBar">
+            <img id="previewImg" alt="">
+            <span class="pv-name" id="previewName"></span>
+            <button class="pv-x" id="previewX">✕</button>
+          </div>
+
+          <div class="composer-box">
+            <button class="icon-btn" id="attachBtn" data-i18n-title="title.attach" title="Fotoğraf / video ekle" aria-label="Ekle">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a5 5 0 0 1-7.07-7.07l9.19-9.19a3.5 3.5 0 0 1 4.95 4.95l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
+            </button>
+            <input type="file" id="fileInput" accept="image/*,video/*" hidden>
+            <textarea id="msgInput" rows="1" placeholder="Vera'ya bir mesaj yaz..." data-i18n-ph="composer.ph"></textarea>
+            <button class="icon-btn" id="micBtn" data-i18n-title="title.dictate" title="Sesle yaz" aria-label="Sesle yaz">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10a7 7 0 0 1-14 0"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+            </button>
+            <button class="icon-btn" id="voiceBtn" data-i18n-title="title.live" title="Canlı sesli sohbet" aria-label="Canlı sesli sohbet">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="10" x2="4" y2="14"/><line x1="8" y1="7" x2="8" y2="17"/><line x1="12" y1="3" x2="12" y2="21"/><line x1="16" y1="7" x2="16" y2="17"/><line x1="20" y1="10" x2="20" y2="14"/></svg>
+            </button>
+            <button class="icon-btn send" id="sendBtn" data-i18n-title="title.send" title="Gönder" aria-label="Gönder">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4 20-7z"/></svg>
+            </button>
+          </div>
+          <div class="composer-hint" data-i18n="composer.hint">Vera hata yapabilir. Önemli bilgileri doğrula. · Enter ile gönder, Shift+Enter yeni satır</div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- ─────────── AYARLAR & PROFİL ─────────── -->
+  <div class="modal-overlay" id="settingsOverlay">
+    <div class="modal">
+      <div class="modal-head">
+        <h3 data-i18n="settings.title">Ayarlar & Profil</h3>
+        <button class="modal-x" id="settingsClose" title="Kapat">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="avatar-edit">
+          <div class="avatar-preview" id="avatarPreview">
+            {% if avatar %}<img src="{{ avatar }}" alt="">{% else %}<span>V</span>{% endif %}
+          </div>
+          <div class="avatar-actions">
+            <label class="avatar-upload">
+              <input type="file" id="avatarInput" accept="image/*" hidden>
+              <span data-i18n="settings.changePhoto">Fotoğrafı değiştir</span>
+            </label>
+            <button type="button" class="avatar-remove" id="avatarRemove" data-i18n="settings.removePhoto">Kaldır</button>
+          </div>
+        </div>
+
+        <label class="modal-label" data-i18n="settings.name">İsim</label>
+        <input class="modal-input" id="profileName" type="text" maxlength="80">
+
+        <label class="modal-label" data-i18n="settings.language">Dil</label>
+        <div class="lang-choice" id="langChoice">
+          <button type="button" data-lang="tr">Türkçe</button>
+          <button type="button" data-lang="en">English</button>
+        </div>
+
+        <div class="modal-msg" id="settingsMsg"></div>
+      </div>
+      <div class="modal-foot">
+        <a class="modal-logout" href="{{ url_for('logout') }}" data-i18n="sb.logout">Çıkış</a>
+        <button class="modal-save" id="profileSave" data-i18n="settings.save">Kaydet</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────────── CANLI SESLİ SOHBET ─────────── -->
+  <div class="voice-overlay" id="voiceOverlay">
+    <canvas id="voiceBlob"></canvas>
+    <div class="voice-status" id="voiceStatus">Bağlanıyor...</div>
+    <div class="voice-transcript" id="voiceTranscript"></div>
+    <button class="voice-close" id="voiceClose" data-i18n="voice.close">Sohbeti bitir</button>
+  </div>
+
+  <script>
+    window.VERA_USER = {{ username | tojson }};
+    window.VERA_AVATAR = {{ avatar | tojson }};
+  </script>
+  <script src="{{ url_for('static', filename='js/i18n.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/blob.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/voice.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/chat.js') }}"></script>
+</body>
+</html>

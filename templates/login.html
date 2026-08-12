@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vera — Giriş</title>
+  <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='favicon.svg') }}">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,800;0,900;1,600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+  <div class="auth-wrap">
+    <div class="auth-visual">
+      <canvas id="blob"></canvas>
+      <div class="brand">VERA</div>
+      <div class="tagline" data-i18n="brand.tagline.login">seninle konuşmaya hazır</div>
+      <ul class="auth-features">
+        <li data-i18n="feature.chat">Doğal, akıcı sohbet</li>
+        <li data-i18n="feature.voice">Sesli konuşma desteği</li>
+        <li data-i18n="feature.memory">Sohbetlerini hatırlar</li>
+      </ul>
+    </div>
+
+    <div class="auth-form-side">
+      <form class="auth-card" method="POST" action="{{ url_for('login') }}">
+        <h1 data-i18n="login.h1">Hoş geldin</h1>
+        <div class="sub" data-i18n="login.sub">Hesabına giriş yap ve Vera ile sohbete devam et.</div>
+
+        {% with messages = get_flashed_messages() %}
+          {% if messages %}<div class="flash">{{ messages[0] }}</div>{% endif %}
+        {% endwith %}
+
+        <div class="field">
+          <label data-i18n="field.email">E-POSTA</label>
+          <input type="email" name="email" placeholder="ornek@gmail.com" data-i18n-ph="ph.email" required autofocus>
+        </div>
+        <div class="field">
+          <label data-i18n="field.password">ŞİFRE</label>
+          <input type="password" name="password" placeholder="••••••••" required>
+        </div>
+        <button class="btn" type="submit" data-i18n="login.btn">Giriş Yap</button>
+
+        <div class="auth-alt">
+          <span data-i18n="login.alt">Hesabın yok mu?</span>
+          <a href="{{ url_for('register') }}" data-i18n="login.alt.link">Kayıt ol</a>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="{{ url_for('static', filename='js/i18n.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/blob.js') }}"></script>
+  <script>
+    const blob = new VeraBlob(document.getElementById('blob'), { size: 380 });
+    blob.setState('idle'); blob.start();
+  </script>
+</body>
+</html>
