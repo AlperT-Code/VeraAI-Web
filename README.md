@@ -27,13 +27,9 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/AlperT-Code/VeraAI-Web/raw/main/video/video.mp4">
-    <img src="https://img.shields.io/badge/▶️_Watch_Demo-6c7bff?style=for-the-badge&logoColor=white" alt="Watch Demo">
-  </a>
+  <a href="https://github.com/AlperT-Code/VeraAI-Web/raw/main/video/video.mp4"><img src="https://img.shields.io/badge/▶️_Watch_Demo-6c7bff?style=for-the-badge&logoColor=white" alt="Watch Demo"></a>
   &nbsp;
-  <a href="https://github.com/AlperT-Code/VeraAI-Web/raw/main/video/video.mp4?download=">
-    <img src="https://img.shields.io/badge/⬇️_Download_Video-2b2d42?style=for-the-badge&logoColor=white" alt="Download Video">
-  </a>
+  <a href="https://github.com/AlperT-Code/VeraAI-Web/raw/main/video/video.mp4?download="><img src="https://img.shields.io/badge/⬇️_Download_Video-2b2d42?style=for-the-badge&logoColor=white" alt="Download Video"></a>
 </p>
 <p align="center"><sub><em>If the player doesn't load above, use the buttons to watch or download the demo.</em></sub></p>
 
