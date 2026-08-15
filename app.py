@@ -9,6 +9,7 @@ import time
 import uuid
 from functools import wraps
 
+from authlib.integrations.flask_client import OAuth
 from flask import (Flask, render_template, request, redirect, url_for,
                    session, jsonify, flash, Response)
 from werkzeug.utils import secure_filename
@@ -24,6 +25,18 @@ app.config["UPLOAD_FOLDER"] = config.UPLOAD_FOLDER
 
 os.makedirs(config.UPLOAD_FOLDER, exist_ok=True)
 db.init_db()
+
+# ── Google ile Giriş (OAuth 2.0) ──
+# GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET .env'de boşsa kayıt yine de yapılır;
+# buton tıklanınca kullanıcıya .env'yi doldurması gerektiği söylenir (bkz. google_login).
+oauth = OAuth(app)
+google_oauth = oauth.register(
+    name="google",
+    client_id=config.GOOGLE_CLIENT_ID,
+    client_secret=config.GOOGLE_CLIENT_SECRET,
+    server_metadata_url="https://accounts.google.com/.well-known/openid-configuration",
+    client_kwargs={"scope": "openid email profile"},
+)
 
 
 # ─────────────────────────────────────────────────────────
@@ -106,6 +119,57 @@ def login():
 def logout():
     session.clear()
     return redirect(url_for("login"))
+
+
+@app.route("/auth/google")
+def google_login():
+    if not config.GOOGLE_CLIENT_ID or not config.GOOGLE_CLIENT_SECRET:
+        flash("Google ile giriş kullanılamıyor: .env dosyasına GOOGLE_CLIENT_ID ve "
+              "GOOGLE_CLIENT_SECRET eklemelisin (bkz. README).")
+        return redirect(url_for("login"))
+    redirect_uri = url_for("google_callback", _external=True)
+    return google_oauth.authorize_redirect(redirect_uri)
+
+
+@app.route("/auth/google/callback")
+def google_callback():
+    try:
+        token = google_oauth.authorize_access_token()
+        info = token.get("userinfo") or google_oauth.userinfo(token=token)
+    except Exception:
+        flash("Google ile giriş başarısız oldu, tekrar dene.")
+        return redirect(url_for("login"))
+
+    google_id = info.get("sub")
+    email = (info.get("email") or "").strip().lower()
+    name = info.get("name") or (email.split("@")[0] if email else "Kullanıcı")
+    picture = info.get("picture")
+
+    if not google_id or not email:
+        flash("Google hesabından e-posta bilgisi alınamadı.")
+        return redirect(url_for("login"))
+
+    user = db.get_user_by_google_id(google_id)
+    if not user:
+        user = db.get_user_by_email(email)
+        if user:
+            db.link_google_account(user["id"], google_id, picture if not user.get("avatar") else None)
+
+    if user:
+        uid = user["id"]
+        username = user["username"]
+        avatar = user.get("avatar") or picture
+    else:
+        uid = db.create_google_user(name, email, google_id, picture)
+        if uid is None:
+            flash("Bu e-posta zaten başka bir hesapla kayıtlı.")
+            return redirect(url_for("login"))
+        username, avatar = name, picture
+
+    session["user_id"] = uid
+    session["username"] = username
+    session["avatar"] = avatar
+    return redirect(url_for("chat_page"))
 
 
 # ─────────────────────────────────────────────────────────

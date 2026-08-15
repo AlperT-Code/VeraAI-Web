@@ -32,6 +32,10 @@ DB_NAME = _get("DB_NAME", "vera_db")
 # ── Flask ──
 FLASK_SECRET_KEY = _get("FLASK_SECRET_KEY", "degistir-beni")
 
+# ── Google Sign-In (OAuth 2.0) — https://console.cloud.google.com/apis/credentials ──
+GOOGLE_CLIENT_ID = _get("GOOGLE_CLIENT_ID", "")
+GOOGLE_CLIENT_SECRET = _get("GOOGLE_CLIENT_SECRET", "")
+
 # ── Yükleme klasörü ──
 UPLOAD_FOLDER = os.path.join(os.path.dirname(__file__), "static", "uploads")
 ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "gif", "webp", "mp4", "webm", "mov"}

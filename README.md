@@ -70,6 +70,11 @@
 - Cream–black minimal theme with an organic animated **blob** background
 - Profile with avatar upload, fully responsive
 
+**Sign in with Google**
+- One-click **"Continue with Google"** button on both the login and register pages (TR + EN)
+- Built with **Authlib** — no password needed for accounts created via Google, avatar/name are pulled from the Google profile
+- Ships **disabled by default**: without `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` in `.env`, the button shows a friendly warning instead of breaking the app — see [Enabling Google Sign-In](#-enabling-google-sign-in) below
+
 ## 🛠️ Tech Stack
 
 - **Python 3 + Flask** — web server, routes and REST API
@@ -77,6 +82,7 @@
 - **OpenWeather API** — live weather via LLM tool-calling
 - **MySQL** — users and conversation history (auto-initialised on first run)
 - **edge-tts** — neural text-to-speech for spoken replies
+- **Authlib** — Google OAuth 2.0 / OpenID Connect sign-in
 - **Vanilla HTML/CSS/JS** — custom design, zero front-end build step
 
 ## 📸 Screenshots
@@ -96,7 +102,7 @@
 
 ## ⚙️ How it works
 
-- **`app.py`** — the Flask server: auth, chat/stream endpoints, transcription, TTS and uploads
+- **`app.py`** — the Flask server: auth (email/password + Google OAuth), chat/stream endpoints, transcription, TTS and uploads
 - **`vera_ai.py`** — the Groq layer: text chat (with weather **tool-calling**), vision, Whisper and TTS
 - **`weather.py`** — the OpenWeather tool the AI calls when a question needs live weather
 - **`database.py`** — MySQL: auto-setup, users and message history
@@ -159,6 +165,26 @@ VeraAI-Web/
    ```
    Then open **http://localhost:5000** (it opens your browser automatically).
 
+## 🔑 Enabling Google Sign-In
+
+The **"Continue with Google"** button is already wired up in the login/register pages, routes and database — it just needs your own OAuth credentials. Nobody else's Google account is connected to this repo; you provide your own.
+
+1. Go to the [Google Cloud Console credentials page](https://console.cloud.google.com/apis/credentials) and create an **OAuth client ID**.
+2. Application type: **Web application**.
+3. Under **Authorized redirect URIs**, add:
+   ```
+   http://localhost:5000/auth/google/callback
+   ```
+   (add your production domain's equivalent too, if you deploy it)
+4. Copy the generated **Client ID** and **Client Secret** into your `.env`:
+   ```
+   GOOGLE_CLIENT_ID=your-client-id.apps.googleusercontent.com
+   GOOGLE_CLIENT_SECRET=your-client-secret
+   ```
+5. Restart the app. That's it — the button now works.
+
+If these two variables are left empty, the button still appears (so the UI looks finished) but clicking it shows a flash message asking you to configure `.env` — it never crashes the app. Regular email/password login always works regardless of this setup.
+
 ## 🤝 Contributing
 
 1. Fork the repository
@@ -171,7 +197,7 @@ VeraAI-Web/
 
 - **Groq cannot generate images or video** — it only does text, image *understanding* and speech-to-text.
 - Live voice chat uses the browser's Web Speech / MediaRecorder APIs → **Chrome or Edge** recommended.
-- Keep your API keys private. `.env` is git-ignored; never commit real keys.
+- Keep your API keys private. `.env` is git-ignored; never commit real keys — this includes your `GOOGLE_CLIENT_SECRET`.
 
 ## 📝 License
 
@@ -214,6 +240,11 @@ This project is licensed under the [MIT License](LICENSE) — © 2026 AlperT-Cod
 - Organik animasyonlu **blob** arka planı olan krem–siyah minimal tema
 - Avatar yükleme destekli profil, tamamen responsive
 
+**Google ile Giriş**
+- Hem giriş hem kayıt sayfasında tek tuşla **"Google ile devam et"** butonu (TR + EN)
+- **Authlib** ile geliştirildi — Google ile açılan hesaplarda şifreye gerek yok; isim ve profil fotoğrafı Google hesabından alınır
+- **Varsayılan olarak kapalı** gelir: `.env` içinde `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` yoksa buton uygulamayı bozmaz, sadece kullanıcıyı bilgilendiren bir uyarı gösterir — kurulum için aşağıdaki [Google ile Girişi Etkinleştirme](#-google-ile-girişi-etkinleştirme) bölümüne bak
+
 ## 🛠️ Kullanılan Teknolojiler
 
 - **Python 3 + Flask** — web sunucusu, rotalar ve REST API
@@ -221,6 +252,7 @@ This project is licensed under the [MIT License](LICENSE) — © 2026 AlperT-Cod
 - **OpenWeather API** — LLM tool-calling ile canlı hava durumu
 - **MySQL** — kullanıcılar ve sohbet geçmişi (ilk çalıştırmada otomatik kurulur)
 - **edge-tts** — sesli cevaplar için neural metin-okuma
+- **Authlib** — Google OAuth 2.0 / OpenID Connect ile giriş
 - **Vanilla HTML/CSS/JS** — özel tasarım, sıfır front-end build adımı
 
 ## 📸 Ekran Görüntüleri
@@ -240,7 +272,7 @@ This project is licensed under the [MIT License](LICENSE) — © 2026 AlperT-Cod
 
 ## ⚙️ Nasıl Çalışıyor
 
-- **`app.py`** — Flask sunucusu: kimlik doğrulama, sohbet/akış uçları, transkripsiyon, TTS ve yükleme
+- **`app.py`** — Flask sunucusu: kimlik doğrulama (e-posta/şifre + Google OAuth), sohbet/akış uçları, transkripsiyon, TTS ve yükleme
 - **`vera_ai.py`** — Groq katmanı: metin sohbeti (hava durumu **tool-calling** ile), vision, Whisper ve TTS
 - **`weather.py`** — bir soruya canlı hava durumu gerektiğinde yapay zekanın çağırdığı OpenWeather aracı
 - **`database.py`** — MySQL: otomatik kurulum, kullanıcılar ve mesaj geçmişi
@@ -303,6 +335,26 @@ VeraAI-Web/
    ```
    Ardından **http://localhost:5000** adresini aç (tarayıcıyı otomatik açar).
 
+## 🔑 Google ile Girişi Etkinleştirme
+
+Giriş ve kayıt sayfalarındaki **"Google ile devam et"** butonu, gerekli rotalar ve veritabanı alanlarıyla birlikte zaten hazır — sadece kendi OAuth bilgilerini girmen yeterli. Bu depoya kimsenin Google hesabı bağlı değil; kendi bilgilerini kendin eklersin.
+
+1. [Google Cloud Console kimlik bilgileri sayfasına](https://console.cloud.google.com/apis/credentials) git ve bir **OAuth client ID** oluştur.
+2. Uygulama türü: **Web application (Web uygulaması)**.
+3. **Authorized redirect URIs (Yetkili yönlendirme URI'leri)** kısmına şunu ekle:
+   ```
+   http://localhost:5000/auth/google/callback
+   ```
+   (projeyi bir sunucuya taşırsan, canlı adresinin karşılığını da ekle)
+4. Oluşturulan **Client ID** ve **Client Secret** değerlerini `.env` dosyana ekle:
+   ```
+   GOOGLE_CLIENT_ID=client-id-degeriniz.apps.googleusercontent.com
+   GOOGLE_CLIENT_SECRET=client-secret-degeriniz
+   ```
+5. Uygulamayı yeniden başlat. Bu kadar — buton artık çalışır.
+
+Bu iki değişken boş bırakılırsa buton yine görünür (arayüz eksik kalmaz) ama tıklanınca `.env` dosyasını doldurman gerektiğini söyleyen bir uyarı gösterir — uygulama asla çökmez. Normal e-posta/şifre ile giriş bu ayardan bağımsız her zaman çalışır.
+
 ## 🤝 Katkıda Bulunma
 
 1. Projeyi fork'la
@@ -315,7 +367,7 @@ VeraAI-Web/
 
 - **Groq görsel veya video ÜRETEMEZ** — yalnızca metin, görsel *anlama* ve ses→metin yapar.
 - Canlı sesli sohbet tarayıcının Web Speech / MediaRecorder API'lerini kullanır → **Chrome veya Edge** önerilir.
-- API anahtarlarını gizli tut. `.env` git tarafından yok sayılır; gerçek anahtarları asla commit'leme.
+- API anahtarlarını gizli tut. `.env` git tarafından yok sayılır; gerçek anahtarları asla commit'leme — buna `GOOGLE_CLIENT_SECRET` de dahil.
 
 ## 📝 Lisans
 

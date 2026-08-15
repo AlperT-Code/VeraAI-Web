@@ -195,6 +195,26 @@ a { color: inherit; }
 }
 .btn:hover { transform: translateY(-2px); box-shadow: 0 14px 32px rgba(17,17,17,.26); }
 .btn:active { transform: translateY(0); box-shadow: 0 6px 16px rgba(17,17,17,.20); }
+.auth-divider {
+  display: flex; align-items: center; gap: 14px;
+  margin: 22px 0;
+  color: var(--muted); font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase;
+}
+.auth-divider::before, .auth-divider::after {
+  content: ''; flex: 1; height: 1px; background: var(--line);
+}
+.btn-google {
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  width: 100%; padding: 15px;
+  border: 1.5px solid var(--line); border-radius: 14px;
+  background: var(--card); color: var(--ink);
+  font-size: 15px; font-weight: bold; letter-spacing: .2px;
+  text-decoration: none; cursor: pointer;
+  transition: border-color .15s, box-shadow .15s, transform .08s;
+}
+.btn-google:hover { border-color: var(--ink); box-shadow: 0 10px 24px rgba(17,17,17,.08); transform: translateY(-2px); }
+.btn-google:active { transform: translateY(0); }
+.btn-google svg { width: 19px; height: 19px; flex-shrink: 0; }
 .auth-alt {
   text-align: center;
   margin-top: 26px;

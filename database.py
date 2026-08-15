@@ -47,7 +47,7 @@ def init_db():
             id           INT AUTO_INCREMENT PRIMARY KEY,
             username     VARCHAR(80)  NOT NULL,
             email        VARCHAR(160) NOT NULL UNIQUE,
-            password     VARCHAR(255) NOT NULL,
+            password     VARCHAR(255) NULL,
             created_at   DATETIME DEFAULT CURRENT_TIMESTAMP
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
     """)
@@ -58,6 +58,23 @@ def init_db():
     """, (config.DB_NAME,))
     if cur.fetchone()[0] == 0:
         cur.execute("ALTER TABLE users ADD COLUMN avatar VARCHAR(500) DEFAULT NULL")
+
+    # users tablosuna google_id sütunu (Google ile Giriş için) — yoksa ekle
+    cur.execute("""
+        SELECT COUNT(*) FROM information_schema.columns
+        WHERE table_schema = %s AND table_name = 'users' AND column_name = 'google_id'
+    """, (config.DB_NAME,))
+    if cur.fetchone()[0] == 0:
+        cur.execute("ALTER TABLE users ADD COLUMN google_id VARCHAR(64) DEFAULT NULL UNIQUE")
+
+    # eski kurulumlarda password NOT NULL olabilir — Google hesapları şifresiz olduğu için gevşet
+    cur.execute("""
+        SELECT IS_NULLABLE FROM information_schema.columns
+        WHERE table_schema = %s AND table_name = 'users' AND column_name = 'password'
+    """, (config.DB_NAME,))
+    row = cur.fetchone()
+    if row and row[0] == "NO":
+        cur.execute("ALTER TABLE users MODIFY COLUMN password VARCHAR(255) NULL")
 
     cur.execute("""
         CREATE TABLE IF NOT EXISTS conversations (
@@ -134,9 +151,57 @@ def get_user_by_email(email):
 def verify_login(email, password):
     """E-posta + şifre doğruysa kullanıcı satırını döner, yoksa None."""
     user = get_user_by_email(email)
-    if user and check_password_hash(user["password"], password):
+    if user and user["password"] and check_password_hash(user["password"], password):
         return user
     return None
+
+
+# ─────────────────────────────────────────────────────────
+#  Google ile Giriş
+# ─────────────────────────────────────────────────────────
+def get_user_by_google_id(google_id):
+    conn = _conn()
+    cur = conn.cursor(dictionary=True)
+    cur.execute("SELECT * FROM users WHERE google_id = %s", (google_id,))
+    row = cur.fetchone()
+    cur.close()
+    conn.close()
+    return row
+
+
+def create_google_user(username, email, google_id, avatar=None):
+    """Google ile ilk kez giriş yapan kullanıcı için şifresiz hesap oluşturur."""
+    conn = _conn()
+    cur = conn.cursor()
+    try:
+        cur.execute(
+            "INSERT INTO users (username, email, password, google_id, avatar) "
+            "VALUES (%s, %s, NULL, %s, %s)",
+            (username[:80], email, google_id, avatar),
+        )
+        conn.commit()
+        return cur.lastrowid
+    except mysql.connector.IntegrityError:
+        return None
+    finally:
+        cur.close()
+        conn.close()
+
+
+def link_google_account(user_id, google_id, avatar=None):
+    """E-posta/şifre ile açılmış var olan bir hesaba Google kimliğini bağlar."""
+    conn = _conn()
+    cur = conn.cursor()
+    if avatar:
+        cur.execute(
+            "UPDATE users SET google_id = %s, avatar = %s WHERE id = %s",
+            (google_id, avatar, user_id),
+        )
+    else:
+        cur.execute("UPDATE users SET google_id = %s WHERE id = %s", (google_id, user_id))
+    conn.commit()
+    cur.close()
+    conn.close()
 
 
 def get_user(user_id):
